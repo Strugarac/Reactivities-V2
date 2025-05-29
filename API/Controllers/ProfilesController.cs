@@ -34,6 +34,6 @@ public class ProfilesController() : BaseApicontoller
 
         var photo = result.Value;
 
-        return File(photo.Content, photo.ContentType);
+        return File(photo.Content!, photo.ContentType);
     }
 }
