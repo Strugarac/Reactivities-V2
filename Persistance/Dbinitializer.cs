@@ -11,9 +11,9 @@ public class Dbinitializer
 
         var users = new List<User>
         {
-            new() {Displayname = "Bob", UserName = "bob@test.com", Email = "bob@test.com"},
-            new() {Displayname = "Tom", UserName = "tom@test.com", Email = "tom@test.com"},
-            new() {Displayname = "Jane", UserName = "jane@test.com", Email = "jane@test.com"}
+            new() {Id = "bob-id" ,Displayname = "Bob", UserName = "bob@test.com", Email = "bob@test.com"},
+            new() {Id = "tom-id" ,Displayname = "Tom", UserName = "tom@test.com", Email = "tom@test.com"},
+            new() {Id = "jane-id" ,Displayname = "Jane", UserName = "jane@test.com", Email = "jane@test.com"}
         };
 
         if (!userManager.Users.Any())

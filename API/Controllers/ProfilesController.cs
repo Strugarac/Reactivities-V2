@@ -36,4 +36,22 @@ public class ProfilesController() : BaseApicontoller
 
         return File(photo.Content!, photo.ContentType);
     }
+
+    [HttpPost("{userId}/follow")]
+    public async Task<ActionResult> FollowToggle(string userId)
+    {
+        return HandleResult(await Mediator.Send(new FollowToggle.Command { TargetUserId = userId }));
+    }
+
+    [HttpGet("{userId}/follow-list")]
+    public async Task<ActionResult> GetFollowings(string userId, string predicate)
+    {
+        return HandleResult(await Mediator.Send(new GetFollowings.Query { UserId = userId, Predicate = predicate }));
+    }
+
+    [HttpGet("{userId}")]
+    public async Task<ActionResult> GetProfile(string userId)
+    {
+        return HandleResult(await Mediator.Send(new GetProfile.Query { UserId = userId }));
+    }
 }
