@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using Application.Activities.Queries;
 using Application.Core;
 using Application.Interfaces;
 using Application.Profiles.Commands;
@@ -53,5 +54,11 @@ public class ProfilesController() : BaseApicontoller
     public async Task<ActionResult> GetProfile(string userId)
     {
         return HandleResult(await Mediator.Send(new GetProfile.Query { UserId = userId }));
+    }
+
+    [HttpGet("{userId}/activities")]
+    public async Task<ActionResult> GetUserActivities(string userId, string filter)
+    {
+        return HandleResult(await Mediator.Send(new GetUserActivities.Query { UserId = userId, Filter = filter }));
     }
 }
