@@ -9,7 +9,7 @@ namespace Infrastructure.Email;
 
 public class EmailService(IOptions<EmailSettings> options ) : IEmailService
 {
-    public async Task SendConfirmationLinkAsync(string to, string subject, string confirmationLink)
+    public async Task SendEmailAsync(string to, string subject, string confirmationLink)
     {
         var message = new MimeMessage();
 

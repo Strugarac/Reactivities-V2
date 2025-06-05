@@ -4,5 +4,5 @@ namespace Application.Interfaces;
 
 public interface IEmailService
 {
-    Task SendConfirmationLinkAsync(string to, string subject, string confirmationLink);
+    Task SendEmailAsync(string to, string subject, string confirmationLink);
 }

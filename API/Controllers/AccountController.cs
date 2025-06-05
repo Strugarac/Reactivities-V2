@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Text;
 using API.DTOs;
 using Application.Interfaces;
@@ -28,7 +29,7 @@ public class AccountController(SignInManager<User> signInManager, IEmailService 
 
         if (result.Succeeded)
         {
-            await GenerateEmailAsync(user, registerDto.Email);
+            await GenerateVerificationEmailAsync(user, registerDto.Email);
 
             return Ok();
         }
@@ -42,7 +43,7 @@ public class AccountController(SignInManager<User> signInManager, IEmailService 
         return ValidationProblem();
     }
 
-    private async Task GenerateEmailAsync(User user,string email)
+    private async Task GenerateVerificationEmailAsync(User user, string email)
     {
         var code = await signInManager.UserManager.GenerateEmailConfirmationTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -53,7 +54,38 @@ public class AccountController(SignInManager<User> signInManager, IEmailService 
             <p> Please click on the link bellow and confirm your email </p>
             <a href='{config["ClientAppUrl"]}/confirm-email?userId={user.Id}&code={code}'>CONFIRM</a>
         ";
-        await emailService.SendConfirmationLinkAsync(email, subject, body);
+        await emailService.SendEmailAsync(email, subject, body);
+
+        Console.WriteLine(body);
+    }
+
+    private async Task GenerateResetPasswordEmailAsync(User user, string email)
+    {
+        var code = await signInManager.UserManager.GeneratePasswordResetTokenAsync(user);
+        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
+        var subject = "Reset Password";
+        var body = $@"
+            <p>Hi {user.Displayname} </p>
+            <p> Please click on the link bellow to change your password </p>
+            <a href='{config["ClientAppUrl"]}/reset-password?email={email}&code={code}'>CONFIRM</a>
+        ";
+        await emailService.SendEmailAsync(email, subject, body);
+
+        Console.WriteLine(body);
+    }
+
+    [AllowAnonymous]
+    [HttpGet("forgot-password/{email}")]
+    public async Task<ActionResult> ForgotPassword(string email)
+    {
+        var user = await signInManager.UserManager.Users.FirstOrDefaultAsync(x => x.Email == email);
+
+        if (user == null) return NotFound("User with that mail does not exist");
+
+        await GenerateResetPasswordEmailAsync(user, email);
+
+        return Ok();
     }
 
     [AllowAnonymous]
@@ -64,9 +96,9 @@ public class AccountController(SignInManager<User> signInManager, IEmailService 
 
         var user = await signInManager.UserManager.GetUserAsync(User);
 
-        if(user == null) return Unauthorized();
+        if (user == null) return Unauthorized();
 
-        return Ok(new 
+        return Ok(new
         {
             user.Displayname,
             user.Email,
@@ -83,7 +115,7 @@ public class AccountController(SignInManager<User> signInManager, IEmailService 
 
         if (user == null) return NotFound("User with that mail doenst exist");
 
-        await GenerateEmailAsync(user, email);
+        await GenerateVerificationEmailAsync(user, email);
 
         return Ok();
     }
@@ -94,5 +126,19 @@ public class AccountController(SignInManager<User> signInManager, IEmailService 
         await signInManager.SignOutAsync();
 
         return NoContent();
+    }
+
+    [HttpPost("change-password")]
+    public async Task<ActionResult> ChangePassword(ChangePasswordDto passwordDto)
+    {
+        var user = await signInManager.UserManager.GetUserAsync(User);
+
+        if (user == null) return Unauthorized();
+
+        var result = await signInManager.UserManager.ChangePasswordAsync(user, passwordDto.CurrentPassword, passwordDto.NewPassword);
+
+        if (result.Succeeded) return Ok();
+
+        return BadRequest(result.Errors.First().Description);
     }
 }
