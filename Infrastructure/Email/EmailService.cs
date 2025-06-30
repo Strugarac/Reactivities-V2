@@ -29,7 +29,8 @@ public class EmailService(IOptions<EmailSettings> options ) : IEmailService
 
         await client.AuthenticateAsync(options.Value.Username, options.Value.Password);
 
-        await client.SendAsync(message);
+        Console.WriteLine(message);
+        //await client.SendAsync(message);
 
         await client.DisconnectAsync(true);
     }
